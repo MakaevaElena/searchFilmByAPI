@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .container {
+            width: 80%;
+            background-color: rgb(243, 233, 233);
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .centerText {
+            text-align: center;
+        }
+
+        .result {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .block {
+            width: fit-content;
+            padding: 10px;
+            margin: 10px auto;
+            display: flex;
+            flex-direction: column;
+            /* text-align: center; */
+            border: 1px solid grey;
+            border-radius: 5px;
+        }
+
+        .bbDiv {
+            text-align: center;
+        }
+
+        input,
+        select {
+            width: 80%;
+            margin: 10px;
+        }
+
+        .row {
+            align-items: center;
+            display: flex;
+            justify-content: space-evenly;
+        }
+
+        #btnSearch {
+            margin: 10px;
+        }
+
+        label {
+            margin-left: 20px;
+        }
+
+        .shortInfo {
+            padding: 10px;
+        }
+
+        .image {
+            padding: 10px;
+        }
+
+
+        .hidden {
+            display: none;
+        }
+
+        .columns {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <p class="centerText">Search</p>
+
+        <div class="block">
+            <div class="row">
+                <label for="title">Title:</label>
+                <input id="title" type="text">
+            </div>
+            <div class="row">
+                <label for="type">Type:</label>
+                <select id="type">
+                    <option>Movie</option>
+                    <option>Series</option>
+                    <option>Episode</option>
+                </select>
+            </div>
+            <button id="btnSearch">Search</button>
+        </div>
+
+        <p class="centerText hidden films">Films</p>
+
+        <div class="searchedFilms result"></div>
+        <div class="bbDiv"></div>
+        <div class="fullDetails"></div>
+        <template id="resultBlockTemplate">
+
+            <div class="result">
+                <div class="block">
+                    <div class="row">
+                        <div class="image">
+                            <img id="image" src="No_Image_Available.jpg" alt="image" width="100px">
+                        </div>
+
+                        <div class="shortInfo">
+                            <span class="type">Type</span>
+                            <h4 class="title">Title</h4>
+                            <p class="year">Year</p>
+                            <button class="btnDetails">Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template id="fullInfoTemplate">
+            <div id="filmDetails">
+                <p class="centerText">Film info:</p>
+                <div class="block">
+                    <div class="row">
+                        <div class="image">
+                            <img id="image" src="No_Image_Available.jpg" alt="image" width="500px">
+                        </div>
+
+                        <div class="fullInfo columns">
+                            <div>
+                                <h4>Title: </h4>
+                            </div>
+                            <div>
+                                <p class="title">Lorem ipsum dolor sit amet.</p>
+                            </div>
+                            <div>
+                                <h4>Released: </h4>
+                            </div>
+                            <div>
+                                <p class="released">Lorem ipsum dolor sit amet.</p>
+                            </div>
+                            <div>
+                                <h4>Genre: </h4>
+                            </div>
+                            <div>
+                                <p class="genre">Lorem ipsum dolor sit amet.</p>
+                            </div>
+                            <div>
+                                <h4>Country: </h4>
+                            </div>
+                            <div>
+                                <p class="country">Lorem ipsum dolor sit amet.</p>
+                            </div>
+                            <div>
+                                <h4>Director: </h4>
+                            </div>
+                            <div>
+                                <p class="director">Lorem ipsum dolor sit amet.</p>
+                            </div>
+                            <div>
+                                <h4>Writer: </h4>
+                            </div>
+                            <div>
+                                <p class="writer">Lorem ipsum dolor sit amet.</p>
+                            </div>
+                            <div>
+                                <h4>Actors: </h4>
+                            </div>
+                            <div>
+                                <p class="actors">Lorem ipsum dolor sit amet.</p>
+                            </div>
+                            <div>
+                                <h4>Awards: </h4>
+                            </div>
+                            <div>
+                                <p class="awards">Lorem ipsum dolor sit amet.</p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </template>
+
+
+    </div>
+    </div>
+    <script>
+        let filmsArray;
+        let request;
+        let request2;
+        let btnDetails;
+        let film;
+        let countForSelection = 3;
+        const bbDiv = document.querySelector('.bbDiv');
+        bbDiv.classList.add('bbDiv');
+
+        const searchedFilms = document.querySelector('.searchedFilms');
+        const btnSearch = document.querySelector('#btnSearch');
+
+        if (window.XMLHttpRequest) {
+            request = new window.XMLHttpRequest();
+            request2 = new window.XMLHttpRequest();
+        } else {
+            request = new ActiveXObject('Microsoft.XMLHTTP');
+            request2 = new ActiveXObject('Microsoft.XMLHTTP');
+        }
+
+
+        function countOfButtons(arr, num) {
+            return Math.ceil(arr.length / num);
+        }
+
+        function printButtons(count) {
+            let r = '';
+            for (let i = 1; i <= count; i++) {
+                r += `<button class="bp">${i}</button>`;
+            }
+            return r;
+        }
+
+
+        btnSearch.addEventListener('click', () => {
+
+            const title = document.querySelector('#title').value;
+            const type = document.querySelector('#type').value;
+
+            // console.log(title);
+            // console.log(type);
+            const template = document.querySelector('#resultBlockTemplate');
+            request.open("GET", `http://www.omdbapi.com/?s=${title}&type=${type}&page=2&apikey=863b58ba`); //создание запроса
+
+            request.onreadystatechange = function () {
+                // console.log(request.readyState);
+
+                if (request.readyState === 4) {
+
+                    filmsArray = JSON.parse(request.response);
+                    // console.log(filmsArray.Search);
+
+                    if (!filmsArray.Search) {
+                        return searchedFilms.innerHTML = 'Movie not found!';
+                    }
+
+                    const pFilms = document.querySelector('p.films');
+                    pFilms.classList.remove('hidden');
+
+                    printResult(filmsArray.Search);
+
+                }
+
+                function printResult(arr) {
+                    arr.slice(0, countForSelection).forEach((film) => {
+                        const resultDiv = template.content.querySelector('.block');
+                        const clone = resultDiv.cloneNode(true);
+                        // console.log(film.Poster);
+
+                        if (film.Poster !== 'N/A') {
+                            clone.querySelector('#image').setAttribute('src', `${film.Poster}`);
+                        }
+
+                        clone.querySelector('.type').innerText = type.toLowerCase();
+                        clone.querySelector('.title').innerText = film.Title;
+                        clone.querySelector('.year').innerText = film.Year;
+                        clone.querySelector('.shortInfo').setAttribute('id', `${film.imdbID}`);
+
+                        searchedFilms.append(clone);
+
+                        btnDetails = document.querySelectorAll('.btnDetails');
+
+                        // console.log(btnDetails);
+
+                        [...btnDetails].forEach(btn =>
+                            btn.addEventListener('click', () => {
+                                let parent = btn.parentNode; //найти родителя
+                                let id = parent.getAttribute('id'); //найти Id
+
+                                //найти фильм по id
+                                // filmById = filmsArray.Search.filter(film => film.imdbID == id);
+                                request2.open("GET", `http://www.omdbapi.com/?i=${id}&apikey=863b58ba`);
+                                request2.onreadystatechange = function () {
+                                    if (request2.readyState === 4) {
+
+                                        filmById = JSON.parse(request2.response);
+                                        // console.log(filmsArray.Search);
+
+                                        if (!filmById) {
+                                            return fullDetails.innerHTML = 'Movie not found!';
+                                        }
+
+                                        // console.log(filmById);
+
+                                        printFilmFullDetails(filmById);
+                                    }
+                                }
+                                request2.send();
+                            }));
+
+                    });
+                }
+                // console.log(filmsArray);
+
+                bbDiv.innerHTML = printButtons(countOfButtons(filmsArray.Search, countForSelection));
+                // searchedFilms.append(bbDiv);
+
+
+                bbDiv.addEventListener('click', function (event) {
+                    searchedFilms.innerHTML = '';
+                    if (event.target.classList.contains('bp')) {
+
+                        let h = event.target.innerText;
+                        let start = countForSelection * (h - 1); //5
+                        let end = countForSelection * h; //10
+
+                        printResult(filmsArray.Search.slice(start, end));
+                    } else {
+                        console.log(event.target);
+                    }
+                });
+
+            };
+            request.send();
+        });
+
+        function printFilmFullDetails(film) {
+            const fullDetails = document.querySelector('.fullDetails');
+            fullDetails.innerHTML = '';
+            const template = document.querySelector('#fullInfoTemplate');
+            const clone = template.content.querySelector('#filmDetails').cloneNode(true);
+
+            clone.querySelector('#image').setAttribute('src', `${film.Poster}`);
+            clone.querySelector('.title').innerText = `${film.Title}`;
+            clone.querySelector('.released').innerText = `${film.Released}`;
+            clone.querySelector('.genre').innerText = `${film.Genre}`;
+            clone.querySelector('.country').innerText = `${film.Country}`;
+            clone.querySelector('.director').innerText = `${film.Director}`;
+            clone.querySelector('.writer').innerText = `${film.Writer}`;
+            clone.querySelector('.actors').innerText = `${film.Actors}`;
+            clone.querySelector('.awards').innerText = `${film.Awards}`;
+
+
+            fullDetails.append(clone);
+        }
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
